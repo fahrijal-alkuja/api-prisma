@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { IsNumber } from 'class-validator';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,30 +18,48 @@ export class UsersService {
     });
   }
 
-  findAll() {
-    return this.prisma.user.findMany();
+  async findAll() {
+    return await this.prisma.user.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.user.findUnique({
+  async findOne(id: number ) {
+    const user = await this.prisma.user.findUnique({
       where: { id },
     });
+    if (!user) {
+            throw new BadRequestException('User not found');
+    }
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, updateUserDto: UpdateUserDto) {
     const { name, email } = updateUserDto;
-    return this.prisma.user.update({
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    } else {
+      return await this.prisma.user.update({
       where: { id },
       data: {
         name,
         email,
       },
     });
+    }
   }
 
-  remove(id: number) {
-    return this.prisma.user.delete({
+  async remove(id: number) {
+    const user = await this.prisma.user.findUnique({
       where: { id },
     });
+    if (!user) { 
+      throw new NotFoundException('User not found');
+    } else {
+      return await this.prisma.user.delete({
+      where: { id },
+    });
+    }
   }
 }
