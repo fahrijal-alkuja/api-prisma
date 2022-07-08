@@ -7,11 +7,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
    constructor(private prisma: PrismaService) {}
   create(createUserDto: CreateUserDto) {
-    const { name, email } = createUserDto;
+    const { name, email, password } = createUserDto;
     return this.prisma.user.create({
       data: {
         name,
         email,
+        password,
       },
     });
   }
